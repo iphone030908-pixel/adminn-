@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JAY SAO - Kitchen & Admin Management</title>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --bg-color: #f4f6f9;
+            --card-bg: #ffffff;
+            --text-dark: #333333;
+            --gold-color: #c5a059;
+            --danger-color: #e74c3c;
+            --success-color: #2ecc71;
+            --warning-color: #f39c12;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Kanit', sans-serif; }
+        body { background-color: var(--bg-color); color: var(--text-dark); padding: 20px; }
+        
+        header {
+            background: #fff;
+            padding: 15px 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        h1 { font-size: 1.4rem; color: var(--gold-color); }
+
+        /* การ์ดสรุปยอดขาย */
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .summary-card {
+            background: #fff;
+            border-radius: 12px;
+            padding: 15px 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .summary-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: white;
+        }
+
+        .summary-info h3 { font-size: 0.85rem; color: #777; font-weight: 400; }
+        .summary-info p { font-size: 1.4rem; font-weight: 600; color: var(--text-dark); }
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 450px;
+            gap: 20px;
+        }
+
+        @media (max-width: 1024px) {
+            .main-grid { grid-template-columns: 1fr; }
+        }
+
+        .section-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+        }
+
+        .section-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid var(--bg-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .orders-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 15px;
+        }
+
+        .order-card {
+            background: #fff;
+            border: 1px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 15px;
+            border-left: 5px solid var(--warning-color);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.03);
+        }
+
+        .order-card.cooking { border-left-color: #3498db; }
+        .order-card.served { border-left-color: var(--success-color); opacity: 0.7; }
+
+        .order-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .order-table-badge {
+            background: var(--gold-color);
+            color: #fff;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+        }
+
+        .order-items-list {
+            margin: 10px 0;
+            font-size: 0.9rem;
+            border-top: 1px dashed #eee;
+            border-bottom: 1px dashed #eee;
+            padding: 8px 0;
+        }
+
+        .btn-status {
+            width: 100%;
+            padding: 8px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            color: white;
+            transition: 0.2s;
+            margin-top: 5px;
+        }
+
+        .btn-status.btn-next { background: var(--warning-color); }
+        .btn-status.btn-finish { background: #3498db; }
+
+        .menu-control-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .control-actions {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .switch-box {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.8rem;
+            color: #666;
+        }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 36px;
+            height: 20px;
+        }
+
+        .switch input { opacity: 0; width: 0; height: 0; }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #ccc;
+            transition: .3s;
+            border-radius: 20px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 14px; width: 14px;
+            left: 3px; bottom: 3px;
+            background-color: white;
+            transition: .3s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider { background-color: var(--success-color); }
+        input:checked + .slider.popular { background-color: #e67e22; }
+        input:checked + .slider:before { transform: translateX(16px); }
+
+        .tab-title { 
+            font-size: 0.95rem; 
+            color: var(--gold-color); 
+            font-weight: 600; 
+            margin-top: 15px; 
+            padding-bottom: 5px;
+            border-bottom: 1px solid #eee;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1><i class="fa-solid fa-utensils"></i> JAY SAO - ระบบจัดการหลังบ้านแม่ค้า</h1>
+        <div id="live-clock" style="font-weight: 600; color: #666;">--:--:--</div>
+    </header>
+
+    <!-- ส่วนแสดงสรุปยอดขายทั้งหมด -->
+    <div class="summary-grid">
+        <div class="summary-card">
+            <div class="summary-icon" style="background: var(--gold-color);">
+                <i class="fa-solid fa-wallet"></i>
+            </div>
+            <div class="summary-info">
+                <h3>ยอดขายรวมทั้งหมด</h3>
+                <p id="total-revenue">฿0</p>
+            </div>
+        </div>
+        <div class="summary-card">
+            <div class="summary-icon" style="background: var(--success-color);">
+                <i class="fa-solid fa-circle-check"></i>
+            </div>
+            <div class="summary-info">
+                <h3>ยอดขาย (เสิร์ฟสำเร็จ)</h3>
+                <p id="served-revenue">฿0</p>
+            </div>
+        </div>
+        <div class="summary-card">
+            <div class="summary-icon" style="background: #3498db;">
+                <i class="fa-solid fa-receipt"></i>
+            </div>
+            <div class="summary-info">
+                <h3>จำนวนออเดอร์ทั้งหมด</h3>
+                <p id="total-orders-count">0 รายการ</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-grid">
+        <!-- รายการออเดอร์ -->
+        <div>
+            <div class="section-card">
+                <div class="section-title">
+                    <span><i class="fa-solid fa-bell"></i> ออเดอร์ล่าสุด (Realtime)</span>
+                </div>
+                <div class="orders-container" id="orders-list">
+                    <p style="color: #999;">ยังไม่มีออเดอร์เข้ามาในขณะนี้...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- จัดการเปิด-ปิด และเมนูขายดี -->
+        <div>
+            <div class="section-card">
+                <div class="section-title">
+                    <span><i class="fa-solid fa-sliders"></i> จัดการสถานะเมนู & เมนูยอดฮิต</span>
+                </div>
+
+                <div class="tab-title"><i class="fa-solid fa-drumstick-bite"></i> วัตถุดิบหลัก</div>
+                <div id="stock-controls"></div>
+
+                <div class="tab-title"><i class="fa-solid fa-bowl-rice"></i> รายการเมนูอาหาร</div>
+                <div id="menu-controls"></div>
+
+                <div class="tab-title"><i class="fa-solid fa-bottle-water"></i> รายการเครื่องดื่ม</div>
+                <div id="drink-controls"></div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getDatabase, ref, set, onValue, update } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBzWaK2WseL5u6DP2e3hV94rM51xwrnBkQ",
+            authDomain: "jeesaorder.firebaseapp.com",
+            databaseURL: "https://jeesaorder-default-rtdb.firebaseio.com",
+            projectId: "jeesaorder",
+            storageBucket: "jeesaorder.firebasestorage.app",
+            messagingSenderId: "5197062084",
+            appId: "1:5197062084:web:9bb8fef5d3db0fe58cec31",
+            measurementId: "G-FJ7Y9673YR"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+
+        // รายการวัตถุดิบ
+        const stockItems = [
+            { id: "meat_pork", name: "หมู" },
+            { id: "meat_chicken", name: "ไก่" },
+            { id: "meat_shrimp", name: "กุ้ง" },
+            { id: "meat_squid", name: "หมึก" },
+            { id: "opt_egg", name: "ไข่ดาว / ไข่เจียว" }
+        ];
+
+        // รายการเมนูอาหารทั้งหมด
+        const foodMenus = [
+            { id: "m_tod_garlic", name: "ทอดกระเทียม" },
+            { id: "m_fried_rik_kaeng", name: "ข้าวผัดพริกแกง" },
+            { id: "m_fried_prik_pao", name: "ข้าวผัดพริกเผา" },
+            { id: "m_fried_pork", name: "ข้าวผัดหมู" },
+            { id: "m_fried_sea", name: "ข้าวผัดทะเล" },
+            { id: "m_khai_jeaw", name: "ไข่เจียว" },
+            { id: "m_kaprow_pork", name: "ผัดกะเพราหมู" },
+            { id: "m_kaprow_chicken", name: "ผัดกะเพราไก่" },
+            { id: "m_kaprow_sea", name: "ผัดกะเพราทะเล" },
+            { id: "m_kaprow_egg", name: "กะเพราไข่เยี่ยวม้า" },
+            { id: "m_pad_phuk", name: "ผัดผักรวม" },
+            { id: "m_kana_crispy", name: "คะน้าหมูกรอบ" },
+            { id: "m_khua_kling", name: "คั่วกลิ้ง" },
+            { id: "m_suki_sea", name: "สุกี้ทะเล" },
+            { id: "m_suki", name: "สุกี้" },
+            { id: "m_yum", name: "ยำรวมมิตร" },
+            { id: "m_radna_pork", name: "ราดหน้าหมูหมัก" },
+            { id: "m_radna_sea", name: "ราดหน้าทะเล" },
+            { id: "m_pad_see_ew", name: "ผัดซีอิ๊ว" },
+            { id: "m_tom_jeed", name: "ต้มจืด" },
+            { id: "m_tomyum_thick", name: "ต้มยำน้ำข้น" },
+            { id: "m_tomyum_clear", name: "ต้มยำน้ำใส" },
+            { id: "m_mama_khee_mao", name: "ผัดมาม่าขี้เมาทะเล" }
+        ];
+
+        // รายการเครื่องดื่มทั้งหมด
+        const drinkMenus = [
+            { id: "d_water", name: "น้ำเปล่า" },
+            { id: "d_lipton", name: "ลิปตัน" },
+            { id: "d_pepsi", name: "เป๊ปซี่" },
+            { id: "d_est_red", name: "น้ำแดง เอส" },
+            { id: "d_est_orange", name: "น้ำส้ม เอส" },
+            { id: "d_est_green", name: "น้ำเขียว เอส" }
+        ];
+
+        function renderStockControls() {
+            const container = document.getElementById('stock-controls');
+            container.innerHTML = stockItems.map(item => `
+                <div class="menu-control-row">
+                    <span>${item.name}</span>
+                    <div class="control-actions">
+                        <div class="switch-box">
+                            <span>พร้อมขาย</span>
+                            <label class="switch">
+                                <input type="checkbox" id="status_${item.id}" checked onchange="toggleStatus('${item.id}', this.checked)">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderMenuControls(items, containerId) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = items.map(item => `
+                <div class="menu-control-row">
+                    <span>${item.name}</span>
+                    <div class="control-actions">
+                        <div class="switch-box">
+                            <span>ขายดี🔥</span>
+                            <label class="switch">
+                                <input type="checkbox" id="pop_${item.id}" onchange="togglePopular('${item.id}', this.checked)">
+                                <span class="slider popular"></span>
+                            </label>
+                        </div>
+                        <div class="switch-box">
+                            <span>พร้อมขาย</span>
+                            <label class="switch">
+                                <input type="checkbox" id="status_${item.id}" checked onchange="toggleStatus('${item.id}', this.checked)">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        renderStockControls();
+        renderMenuControls(foodMenus, 'menu-controls');
+        renderMenuControls(drinkMenus, 'drink-controls');
+
+        window.toggleStatus = function(itemKey, isChecked) {
+            set(ref(database, 'menu_status/' + itemKey), isChecked);
+        };
+
+        window.togglePopular = function(itemKey, isChecked) {
+            set(ref(database, 'popular_status/' + itemKey), isChecked);
+        };
+
+        onValue(ref(database, 'menu_status'), (snapshot) => {
+            const data = snapshot.val();
+            if (data) {
+                Object.keys(data).forEach(key => {
+                    const toggleBtn = document.getElementById('status_' + key);
+                    if (toggleBtn) toggleBtn.checked = data[key];
+                });
+            }
+        });
+
+        onValue(ref(database, 'popular_status'), (snapshot) => {
+            const data = snapshot.val();
+            if (data) {
+                Object.keys(data).forEach(key => {
+                    const toggleBtn = document.getElementById('pop_' + key);
+                    if (toggleBtn) toggleBtn.checked = data[key];
+                });
+            }
+        });
+
+        // ดึงรายการออเดอร์ Realtime และคำนวณยอดเงินสะสม
+        onValue(ref(database, 'orders'), (snapshot) => {
+            const container = document.getElementById('orders-list');
+            const data = snapshot.val();
+
+            if (!data) {
+                container.innerHTML = '<p style="color: #999;">ยังไม่มีออเดอร์เข้ามาในขณะนี้...</p>';
+                document.getElementById('total-revenue').textContent = '฿0';
+                document.getElementById('served-revenue').textContent = '฿0';
+                document.getElementById('total-orders-count').textContent = '0 รายการ';
+                return;
+            }
+
+            let grandTotal = 0;
+            let servedTotal = 0;
+            let totalCount = 0;
+
+            container.innerHTML = '';
+            
+            Object.keys(data).reverse().forEach(key => {
+                const order = data[key];
+                const price = Number(order.totalPrice) || 0;
+                
+                grandTotal += price;
+                totalCount += 1;
+
+                if (order.status === 'เสิร์ฟเรียบร้อย') {
+                    servedTotal += price;
+                }
+
+                let cardClass = '';
+                let btnText = 'เริ่มปรุงอาหาร';
+                let btnClass = 'btn-next';
+                let nextStatus = 'กำลังปรุงอาหาร';
+
+                if (order.status === 'กำลังปรุงอาหาร') {
+                    cardClass = 'cooking';
+                    btnText = 'ปรุงเสร็จ / พร้อมเสิร์ฟ';
+                    btnClass = 'btn-finish';
+                    nextStatus = 'เสิร์ฟเรียบร้อย';
+                } else if (order.status === 'เสิร์ฟเรียบร้อย') {
+                    cardClass = 'served';
+                    btnText = 'เสิร์ฟแล้ว';
+                }
+
+                const itemsHtml = order.items.map(i => `<div>- ${i.name} x <b>${i.quantity}</b></div>`).join('');
+
+                const orderCardHtml = `
+                    <div class="order-card ${cardClass}">
+                        <div class="order-header">
+                            <span>${order.orderNumber} (${order.orderType})</span>
+                            <span class="order-table-badge">โต๊ะ ${order.table}</span>
+                        </div>
+                        <div style="font-size: 0.8rem; color: #777;">เวลา: ${order.orderTime} | ชำระ: ${order.paymentMethod}</div>
+                        <div class="order-items-list">${itemsHtml}</div>
+                        <div style="font-weight:600; font-size:0.95rem; margin-bottom:8px; text-align:right; color:var(--gold-color);">
+                            รวม ฿${price.toLocaleString()}
+                        </div>
+                        ${order.status !== 'เสิร์ฟเรียบร้อย' ? 
+                            `<button class="btn-status ${btnClass}" onclick="updateOrderStatus('${key}', '${nextStatus}')">${btnText}</button>` 
+                            : `<button class="btn-status" style="background:#ccc; cursor:default;">เสิร์ฟเรียบร้อยแล้ว</button>`}
+                    </div>
+                `;
+                container.innerHTML += orderCardHtml;
+            });
+
+            // อัปเดตตัวเลขยอดขายขึ้นหน้าจอ
+            document.getElementById('total-revenue').textContent = `฿${grandTotal.toLocaleString()}`;
+            document.getElementById('served-revenue').textContent = `฿${servedTotal.toLocaleString()}`;
+            document.getElementById('total-orders-count').textContent = `${totalCount} รายการ`;
+        });
+
+        window.updateOrderStatus = function(orderKey, statusText) {
+            update(ref(database, `orders/${orderKey}`), { status: statusText });
+        };
+    </script>
+
+    <script>
+        setInterval(() => {
+            document.getElementById('live-clock').textContent = new Date().toLocaleTimeString('th-TH');
+        }, 1000);
+    </script>
+</body>
+</html>
